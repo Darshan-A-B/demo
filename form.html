@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Schedule appointment</title>
+    <link rel="stylesheet" type="text/css" href="form.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Schedule Appointment</h1>
+      <p>* are mandatory</p>
+      <form id="appointment-form">
+        <input type="text" for="name" id="name" name="name" placeholder="Name *" required>
+        <label for="mobile"></label>
+        <input type="tel" id="mobile" name="mobile" placeholder="Mobile number *" required>
+        <!-- <div><button type="button" id="getotp">Get OTP</button><input type="text" id="otp" name="otp" placeholder="Enter the OTP you received"></div> -->
+        <label for="date">Appointment Date *</label>
+        <input type="date" id="date" name="date" required>
+        <select id="timeslot" name="timeslot" required>
+          <option id="timeslot" value="nil">Select time slot</option>
+          <option id="timeslot" value="9-12">9AM TO 12pm</option>
+          <option id="timeslot" value="12-3">12PM TO 3PM</option>
+          <option id="timeslot" value="3-6">3PM TO 6PM</option>
+          <option id="timeslot" value="6-8">6PM TO 12PM</option>
+        </select>
+        <select id="type" name="type" required>
+          <option id="type" value="NA">Select appointment type</option>
+          <option id="type" value="fresh">Fresh Appointment</option>
+          <option id="type" value="follow-up">Follow-up Appointment</option>
+        </select>
+        <label for="consultant">Choose Doctor</label>
+        <select id="consultant" name="consultant">
+          <option value="nochoice">No preference</option>
+          <option value="consultant 1">consultant 1</option>
+          <option value="consultant 2">consultant 2</option>
+        </select>
+        <textarea id="address" name="address" placeholder="Enter your address"></textarea>
+        <textarea id="remarks" name="remarks" placeholder="Enter any additional remarks"></textarea>
+        <button type="submit" id="#btnsubmit">Send Message</button>
+      </form>
+      <script src="form.js"></script>
+      <script>
+const params = new URLSearchParams(window.location.search);
+const hospitalid = params.get('hospitalid');
+const hospitalwhatsapp = params.get('hospitalwhatsapp');
+const form = document.getElementById("appointment-form");
+
+form.addEventListener("submit", function(event) {
+  event.preventDefault();
+  
+  // Get the form data
+  const formData = new FormData(event.target);
+  
+
+  // Get the form values
+  const name = formData.get("name");
+  const mobile = formData.get("mobile");
+  const date = formData.get("date");
+  const timeslot = formData.get("timeslot");
+  const type = formData.get("type");
+  const consultant = formData.get("consultant");
+  const address = formData.get("address");
+  const remarks = formData.get("remarks");
+  
+  // Build the message for WhatsApp
+  const message = `Hi, from yarago. Here is the new appointment details:%0A%0AName: ${name}%0AMobile: ${mobile}%0ADate: ${date}%0ATime: ${timeslot}%0AAppointment-type: ${type}%0ADoctor: ${consultant}%0AAddress: ${address}%0ARemarks: ${remarks}`;
+  
+
+  const url = `https://wa.me/${hospitalwhatsapp}/?text=${message}`;
+  window.open(url);
+
+  formData.append("hospitalid", hospitalid);
+
+  // Send the form data to the third-party service
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "https://formspree.io/f/mwkjnoog");
+  xhr.setRequestHeader("Accept", "application/json");
+  xhr.send(formData);
+  
+  // Redirect to success page after 5 seconds
+  setTimeout(function() {
+    window.location.href = "success.html";
+  }, 2000);
+});
+
+      </script>
+  </body>
+</html>
