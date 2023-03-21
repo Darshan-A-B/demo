@@ -10,7 +10,7 @@ const defaulthospitals = [
   "hospitalName": "Demo",
   "Speciality": "General",
   "DoctorName": "Demo",
-  "description": "Best treatment",
+  "description": "Welcome to our Eye Hospital, where we provide comprehensive and advanced eye care services to help improve your vision and eye health. Our hospital is staffed by a team of highly skilled and experienced ophthalmologists, optometrists, and support staff who are dedicated to providing personalized care to each of our patients. We offer a wide range of services including comprehensive eye exams, diagnosis and treatment of eye diseases, cataract surgery, refractive surgery, corneal transplants, glaucoma management, pediatric ophthalmology, and more. Our state-of-the-art facilities are equipped with the latest technology and equipment to ensure that we provide the most advanced care available. At our Eye Hospital, we believe that every patient deserves compassionate and individualized care. Our team takes the time to listen to your concerns and thoroughly evaluate your eye health to develop a customized treatment plan that meets your unique needs. We are committed to providing exceptional care to each and every patient, and we strive to exceed your expectations in every way. We invite you to explore our website to learn more about our services, team, and facilities. We look forward to serving you and helping you achieve optimal eye health and vision.",
   "phone": 9110685426,
   "location": "Biet, davanagere, Karnataka - 577004",
   "latitude": 14.4558702,
