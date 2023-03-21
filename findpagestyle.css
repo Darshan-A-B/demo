@@ -100,3 +100,32 @@ button a {
   height: 200px; /* set a fixed height */
   object-fit: cover; /* to prevent distortion of image */
 }
+
+
+
+.description-container p.truncated {
+  max-height: 100px; /* set the maximum height for truncated text */
+}
+
+.read-more-button {
+  display: block;
+  font-size: 10px;
+  margin-top: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.read-more-button:hover {
+  background-color: #666;
+}
+.description-container {
+  overflow: hidden;
+  min-height: 100px; /* set a minimum height for the container */
+}
+
+
+
