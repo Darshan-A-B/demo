@@ -1,9 +1,9 @@
-
 const form = document.querySelector('form');
 const hospitalListings = document.querySelector('#hospital-listings');
 // dummy data for default hospital listings
+
 const defaulthospitals = [
-   {
+  {
     "hospitalid": 1,
     "hospitalimage": "images/hospitalimages/aastha.jpg",
     "hospitalmap": "https://goo.gl/maps/xQej4mPk4PagE2Nv8",
@@ -260,242 +260,137 @@ const defaulthospitals = [
     "latitude": 12.9090173,
     "longitude": 77.6444754,
     "city": "Bangalore"
-   }
-  ];
-
+   },
+ ];
  
-// display default hospital listings on page load
-defaulthospitals.forEach(function(hospital) {
-   const hospitalListing = document.createElement('div');
-   hospitalListing.classList.add('hospital-listing');
-
-   // Add the hospital hospitalimage to the div
-   if (hospital.hospitalimage) {
-      const img = document.createElement("img");
-      img.src = hospital.hospitalimage;
-      img.alt = `${hospital.name} hospitalimage`;
-      img.classList.add("hospital-hospitalimage");
-      hospitalListing.appendChild(img);
-   }
-   const hospitalName = document.createElement('h2');
-   hospitalName.textContent = hospital.hospitalName;
-   hospitalListing.appendChild(hospitalName);
-
-   const Speciality = document.createElement('p');
-   Speciality.textContent = "Speciality: " + hospital.Speciality;
-   hospitalListing.appendChild(Speciality);
-
-   if (hospital.DoctorName) {
-      const DoctorName = document.createElement('p');
-      DoctorName.textContent = "Dr. " + hospital.DoctorName;
-      hospitalListing.appendChild(DoctorName);
-   }
-
-   const location = document.createElement('p');
-   location.classList.add('location');
-   location.textContent = "Address: " + hospital.location;
-   hospitalListing.appendChild(location);
-
-   if (hospital.description) {
-      const descriptionContainer = document.createElement('div');
-      const description = document.createElement('p');
-      const maxLength = 100; // set the maximum number of characters to show
-      description.textContent = hospital.description.substring(0, maxLength) + '...'; // truncate the text and add ellipsis
-      description.classList.add('truncated'); // add class to indicate that text is truncated
-      descriptionContainer.appendChild(description);
-      descriptionContainer.classList.add('description-container');
-
-      const readMoreButton = document.createElement('button');
-      readMoreButton.textContent = 'Read More';
-      readMoreButton.classList.add('read-more-button');
-
-      readMoreButton.addEventListener('click', () => {
-         if (description.classList.contains('truncated')) {
-            description.textContent = hospital.description;
-            description.classList.remove('truncated');
-            readMoreButton.textContent = 'Read Less';
-         } else {
-            description.textContent = hospital.description.substring(0, maxLength) + '...';
-            description.classList.add('truncated');
-            readMoreButton.textContent = 'Read More';
-         }
-      });
-
-      descriptionContainer.appendChild(readMoreButton);
-      hospitalListing.appendChild(descriptionContainer);
-   }
-
-   // Add the hospital phone button to the div
-   const phone = document.createElement("button");
-   phone.innerText = "Call";
-   phone.type = "button";
-   phone.onclick = () => window.location.href = `tel:${hospital.phone}`;
-   phone.classList.add("hospital-phone");
-   hospitalListing.appendChild(phone);
-
-   // Add the google hospitalmap link to the div
-   const hospitalmapButton = document.createElement("button");
-   hospitalmapButton.innerText = " View on map";
-   hospitalmapButton.onclick = function() {
-      window.open(hospital.hospitalmap);
-   };
-   hospitalmapButton.classList.add("hospital-hospitalmap-button");
-   hospitalListing.appendChild(hospitalmapButton);
-
-   const bookAppointmentButton = document.createElement("button");
-   bookAppointmentButton.innerText = "Book online Appointment";
-   bookAppointmentButton.onclick = function() {
-      window.location.href = `form.html?hospitalid=${hospital.hospitalid}&hospitalwhatsapp=${hospital.hospitalwhatsapp}`;
-   };
-   bookAppointmentButton.classList.add("hospital-book-appointment-button");
-   hospitalListing.appendChild(bookAppointmentButton);
-
-   hospitalListings.appendChild(hospitalListing);
-});
-
-
-if (navigator.permissions) {
-   navigator.permissions.query({name:'geolocation'}).then(function(result) {
-     if (result.state === 'granted') {
-       // Location service is enabled
-     } else if (result.state === 'prompt') {
-       // Location service permission is not yet granted, prompt the user to enable it
-       if (confirm("Please enable location services for this website.")) {
-         window.location.href = "settings://location"; // Redirect to location settings in mobile
-         
-       }
-     } else if (result.state === 'denied') {
-       // Location service permission is denied, prompt the user to enable it
-       if (confirm("Please enable location services for this website.")) {
-         window.location.href = "settings://location"; // Redirect to location settings in mobile
-         
-       }
-     }
-   });
- } else {
-   // Permissions API is not supported by this browser
- }
+ const cityInput = document.querySelector('#city');
+ const specialtyInput = document.querySelector('#specialty');
  
-
-// fetch user location on page load
-if ("geolocation" in navigator) {
- navigator.geolocation.getCurrentPosition(function(position) {
-   const latitude = position.coords.latitude;
-   const longitude = position.coords.longitude;
-   const locationInput = document.querySelector('#location');
-   
+ const successCallback = (position) => {
+   console.log(position);
+ };
+ const errorCallback = (error) => {
+   console.log(error);
+ };
+ const options = {
+   enableHighAccuracy: true,
+   timeout: 10000,
+ };
+ navigator.geolocation.getCurrentPosition(
+   successCallback,
+   errorCallback,
+   options
+ );
  
-         // reverse geocode the coordinates to get the user's city and state
-         fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
-            .then(response => response.json())
-            .then(data => {
-               const city = data.address.city || data.address.town;
-               const state = data.address.state;
-               locationInput.value = `${city}, ${state}`;
-
-               // update distance for each hospital listing
-               defaulthospitals.forEach(function(hospital) {
-                  const distance = getDistance(latitude, longitude, hospital.latitude, hospital.longitude);
-                  hospital.distance = distance;
-               });
-
-               // sort hospitals by distance from user's location
-               defaulthospitals.sort(function(a, b) {
-                  return a.distance - b.distance;
-               });
-
-               // display hospital listings in order of near to far
-               hospitalListings.innerHTML = '';
-               defaulthospitals.forEach(function(hospital) {
-                  const hospitalListing = document.createElement('div');
-                  hospitalListing.classList.add('hospital-listing');
-                  // Add the hospital hospitalimage to the div
-                  const img = document.createElement("img");
-                  img.src = hospital.hospitalimage;
-                  img.alt = `${hospital.name} hospitalimage`;
-                  img.classList.add("hospital-hospitalimage");
-                  hospitalListing.appendChild(img);
-                  
-                  const hospitalName = document.createElement('h2');
-               hospitalName.textContent = `${hospital.hospitalName}(${'\xa0'}${hospital.distance.toFixed(2)} km away)`;
-               hospitalListing.appendChild(hospitalName);
-
-               const Speciality = document.createElement('p');
-               Speciality.textContent = "Speciality: " + hospital.Speciality;
-               hospitalListing.appendChild(Speciality);
-
-               if (hospital.DoctorName) {
-                  const DoctorName = document.createElement('p');
-                  DoctorName.textContent = "Dr. " + hospital.DoctorName;
-                  hospitalListing.appendChild(DoctorName);
-               }
-
-               const location = document.createElement('p');
-               location.classList.add('location');
-               location.textContent = "Address: " + hospital.location;
-               hospitalListing.appendChild(location);
-
-               if (hospital.description) {
-                  const descriptionContainer = document.createElement('div');
-                  const description = document.createElement('p');
-                  const maxLength = 100; // set the maximum number of characters to show
-                  description.textContent = hospital.description.substring(0, maxLength) + '...'; // truncate the text and add ellipsis
-                  description.classList.add('truncated'); // add class to indicate that text is truncated
-                  descriptionContainer.appendChild(description);
-                  descriptionContainer.classList.add('description-container');
-
-                  const readMoreButton = document.createElement('button');
-                  readMoreButton.textContent = 'Read More';
-                  readMoreButton.classList.add('read-more-button');
-
-                  readMoreButton.addEventListener('click', () => {
-                     if (description.classList.contains('truncated')) {
-                        description.textContent = hospital.description;
-                        description.classList.remove('truncated');
-                        readMoreButton.textContent = 'Read Less';
-                     } else {
-                        description.textContent = hospital.description.substring(0, maxLength) + '...';
-                        description.classList.add('truncated');
-                        readMoreButton.textContent = 'Read More';
-                     }
-                  });
-
-                  descriptionContainer.appendChild(readMoreButton);
-                  hospitalListing.appendChild(descriptionContainer);
-               }
-
-               // Add the hospital phone button to the div
-               const phone = document.createElement("button");
-               phone.innerText = "Call";
-               phone.type = "button";
-               phone.onclick = () => window.location.href = `tel:${hospital.phone}`;
-               phone.classList.add("hospital-phone");
-               hospitalListing.appendChild(phone);
-
-               // Add the google hospitalmap link to the div
-               const hospitalmapButton = document.createElement("button");
-               hospitalmapButton.innerText = " View on map";
-               hospitalmapButton.onclick = function() {
-                  window.open(hospital.hospitalmap);
-               };
-               hospitalmapButton.classList.add("hospital-hospitalmap-button");
-               hospitalListing.appendChild(hospitalmapButton);
-
-               const bookAppointmentButton = document.createElement("button");
-               bookAppointmentButton.innerText = "Book online Appointment";
-               bookAppointmentButton.onclick = function() {
-                  window.location.href = `form.html?hospitalid=${hospital.hospitalid}&hospitalwhatsapp=${hospital.hospitalwhatsapp}`;
-               };
-               bookAppointmentButton.classList.add("hospital-book-appointment-button");
-               hospitalListing.appendChild(bookAppointmentButton);
-
-         hospitalListings.appendChild(hospitalListing);
-       });
-     })
-     .catch(error => console.log(error));
-});
+ function filterHospitals() {
+  const selectedCity = cityInput.value;
+  const selectedSpecialty = specialtyInput.value;
+     
+  // filter hospitals based on selected city and specialty
+  const filteredHospitals = defaulthospitals.filter(function(hospital) {
+    return hospital.city === selectedCity && 
+           (selectedSpecialty === '' || hospital.Speciality === selectedSpecialty);
+  });
+  
+  // display filtered hospital listings
+  hospitalListings.innerHTML = '';
+  filteredHospitals.forEach(function(hospital) {
+    const hospitalListing = document.createElement('div');
+    hospitalListing.classList.add('hospital-listing');
+  
+    const hospitalName = document.createElement('h2');
+    hospitalName.textContent = hospital.hospitalName;
+    hospitalListing.appendChild(hospitalName);
+  
+    const Speciality = document.createElement('p');
+    Speciality.textContent = "Speciality: " + hospital.Speciality;
+    hospitalListing.appendChild(Speciality);
+  
+    const location = document.createElement('p');
+    location.classList.add('location');
+    location.textContent = "Address: " + hospital.location;
+    hospitalListing.appendChild(location);
+  
+    hospitalListings.appendChild(hospitalListing);
+  });
 }
-// function to calculate distance between two coordinates using Haversine formula
+ 
+ cityInput.addEventListener("change", filterHospitals);
+ specialtyInput.addEventListener("change", filterHospitals);
+ 
+
+ // fetch user location on page load
+if ("geolocation" in navigator) {
+   navigator.geolocation.getCurrentPosition(function(position) {
+     const latitude = position.coords.latitude;
+     const longitude = position.coords.longitude;
+     const locationInput = document.querySelector('#location');
+ 
+     // reverse geocode the coordinates to get the user's city and state
+     fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
+       .then(response => response.json())
+       .then(data => {
+         const city = data.address.city || data.address.town;
+         const state = data.address.state;
+         locationInput.value = `${city}, ${state}`;
+ 
+         // update distance for each hospital listing
+         defaulthospitals.forEach(function(hospital) {
+           const distance = getDistance(latitude, longitude, hospital.latitude, hospital.longitude);
+           hospital.distance = distance;
+         });
+           
+         // sort hospitals by distance from user's location
+         defaulthospitals.sort(function(a, b) {
+           return a.distance - b.distance;
+         });
+
+          
+ function filterHospitals() {
+  const selectedCity = cityInput.value;
+  const selectedSpecialty = specialtyInput.value;
+     
+  // filter hospitals based on selected city and specialty
+  const filteredHospitals = defaulthospitals.filter(function(hospital) {
+    return hospital.city === selectedCity && 
+           (selectedSpecialty === '' || hospital.Speciality === selectedSpecialty);
+  });
+  
+  // display filtered hospital listings
+  hospitalListings.innerHTML = '';
+  filteredHospitals.forEach(function(hospital) {
+    const hospitalListing = document.createElement('div');
+    hospitalListing.classList.add('hospital-listing');
+  
+    const hospitalName = document.createElement('h2');
+           hospitalName.textContent = `${hospital.hospitalName}(${'\xa0'}${hospital.distance.toFixed(2)} km away)`;
+           hospitalListing.appendChild(hospitalName);
+  
+    const Speciality = document.createElement('p');
+    Speciality.textContent = "Speciality: " + hospital.Speciality;
+    hospitalListing.appendChild(Speciality);
+  
+    const location = document.createElement('p');
+    location.classList.add('location');
+    location.textContent = "Address: " + hospital.location;
+    hospitalListing.appendChild(location);
+  
+    hospitalListings.appendChild(hospitalListing);
+  });
+}
+ 
+ cityInput.addEventListener("change", filterHospitals);
+ specialtyInput.addEventListener("change", filterHospitals);
+ 
+
+       })
+       .catch(error => {
+         console.log(error);
+       });
+   });
+ }
+
+ // function to calculate distance between two coordinates using Haversine formula
 function getDistance(lat1, lon1, lat2, lon2) {
    const R = 6371; // radius of the earth in kilometers
    const dLat = toRadians(lat2 - lat1);
