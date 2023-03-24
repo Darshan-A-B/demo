@@ -263,60 +263,6 @@ const defaulthospitals = [
    }
   ];
 
-  
-if (navigator.permissions) {
-   navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
-     if (result.state === 'granted') {
-       // Location access is enabled
-     } else if (result.state === 'prompt') {
-       // Location access permission is not yet granted, prompt the user to enable it
-       function requestPermission() {
-         navigator.geolocation.getCurrentPosition(
-           function(position) {
-             // Permission granted, update result.state
-             result.state = 'granted';
-           },
-           function(error) {
-             // Permission denied or error occurred, show message and try again
-             if (error.code === 1) {
-               // Permission denied by the user earlier
-               if (confirm('This feature requires location access. Would you like to enable it?')) {
-                 requestPermission();
-               } else {
-                 alert('Please enable location services to use this feature.');
-               }
-             } else {
-               // Other error occurred
-               alert('An error occurred while getting your location.');
-             }
-           }
-         );
-       }
-       requestPermission();
-     } else if (result.state === 'denied') {
-       // Location access is denied, prompt the user to enable it
-       function requestPermission() {
-         navigator.geolocation.getCurrentPosition(
-           function(position) {
-             // Permission granted, update result.state
-             result.state = 'granted';
-           },
-           function(error) {
-             alert('Please enable location services to use this feature.');
-           }
-         );
-       }
-       if (confirm('This feature requires location access. Would you like to enable it?')) {
-         requestPermission();
-       } else {
-         alert('Please enable location services to use this feature.');
-         requestPermission();
-       }
-     }
-   });
- } else {
-   // Permissions API is not supported by this browser
- }
  
 // display default hospital listings on page load
 defaulthospitals.forEach(function(hospital) {
@@ -408,14 +354,37 @@ defaulthospitals.forEach(function(hospital) {
 });
 
 
+if (navigator.permissions) {
+   navigator.permissions.query({name:'geolocation'}).then(function(result) {
+     if (result.state === 'granted') {
+       // Location service is enabled
+     } else if (result.state === 'prompt') {
+       // Location service permission is not yet granted, prompt the user to enable it
+       if (confirm("Please enable location services for this website.")) {
+         window.location.href = "settings://location"; // Redirect to location settings in mobile
+         
+       }
+     } else if (result.state === 'denied') {
+       // Location service permission is denied, prompt the user to enable it
+       if (confirm("Please enable location services for this website.")) {
+         window.location.href = "settings://location"; // Redirect to location settings in mobile
+         
+       }
+     }
+   });
+ } else {
+   // Permissions API is not supported by this browser
+ }
+ 
 
-if ('geolocation' in navigator) {
-   navigator.geolocation.getCurrentPosition(
-      function(position) {
-         const latitude = position.coords.latitude;
-         const longitude = position.coords.longitude;
-         const locationInput = document.querySelector('#location');
-
+// fetch user location on page load
+if ("geolocation" in navigator) {
+ navigator.geolocation.getCurrentPosition(function(position) {
+   const latitude = position.coords.latitude;
+   const longitude = position.coords.longitude;
+   const locationInput = document.querySelector('#location');
+   
+ 
          // reverse geocode the coordinates to get the user's city and state
          fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`)
             .then(response => response.json())
@@ -520,22 +489,12 @@ if ('geolocation' in navigator) {
                bookAppointmentButton.classList.add("hospital-book-appointment-button");
                hospitalListing.appendChild(bookAppointmentButton);
 
-                  hospitalListings.appendChild(hospitalListing);
-               });
-            });
-      },
-      function(error) {
-         if (error.code == error.PERMISSION_DENIED) {
-            // Location services disabled, show a message or prompt to enable it
-            alert('Please turn-on location in your device settings to get nearest hospital');
-         }
-      }
-   );
-} else {
-   // Geolocation not supported by browser
+         hospitalListings.appendChild(hospitalListing);
+       });
+     })
+     .catch(error => console.log(error));
+});
 }
-
-
 // function to calculate distance between two coordinates using Haversine formula
 function getDistance(lat1, lon1, lat2, lon2) {
    const R = 6371; // radius of the earth in kilometers
